@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { v4 as uuiV4 } from "uuid";
+import React, { useEffect, useState } from "react";
+import { ObjectId } from "bson";
 
-const TagView = ({ node, updateNode, tagId, parentTagId }) => {
+const TagView = ({ node, updateNode, tagId, parentTagId, setUpdates }) => {
   const parentKey = parentTagId ? `${parentTagId}.${tagId}` : tagId;
   const [collapsed, setCollapsed] = useState(false);
   const [editingName, setEditingName] = useState(false);
@@ -19,19 +19,29 @@ const TagView = ({ node, updateNode, tagId, parentTagId }) => {
   const handleDataChange = (e) => {
     setData(e.target.value);
     updateNode(parentKey, { ...node, data: e.target.value });
+    setUpdates((prevUpdates) => [
+      ...prevUpdates,
+      { ...node, data: e.target.value },
+    ]);
   };
 
   const handleNameSave = (e) => {
     if (e.key === "Enter") {
       setEditingName(false);
       updateNode(parentKey, { ...node, name });
+      setUpdates((prevUpdates) => [...prevUpdates, { ...node, name }]);
     }
   };
 
   // Add a new child when the "Add Child" button is clicked
   const addChild = () => {
-    const newChildId = uuiV4();
-    const newChild = { id: newChildId, name: "New Child", data: "Data" };
+    const newChildId = new ObjectId().toString();
+    const newChild = {
+      id: newChildId,
+      name: "New Child",
+      data: "Data",
+      parentTagId: tagId,
+    };
     if (!node.children) {
       updateNode(parentKey, {
         ...node,
@@ -43,7 +53,13 @@ const TagView = ({ node, updateNode, tagId, parentTagId }) => {
         children: [...node.children, newChild],
       });
     }
+    setUpdates((prevUpdates) => [...prevUpdates, newChild]);
   };
+
+  useEffect(() => {
+    setName(node.name);
+    setData(node.data);
+  }, [node]);
 
   return (
     <div className="tag">
@@ -85,6 +101,7 @@ const TagView = ({ node, updateNode, tagId, parentTagId }) => {
               tagId={child.id}
               parentTagId={parentKey}
               updateNode={updateNode}
+              setUpdates={setUpdates}
             />
           ))}
         </div>

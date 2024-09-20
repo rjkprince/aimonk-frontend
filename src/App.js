@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css"; // For styling
 import TagView from "./TagView"; // Import the Tag component
+import axios from "axios";
 
 const initialTree = {
   id: "id-1",
@@ -23,6 +24,7 @@ const initialTree = {
 const App = () => {
   const [tree, setTree] = useState(initialTree);
   const [exportTree, setExportTree] = useState();
+  const [updates, setUpdates] = useState([]);
   // Recursively update the tree node with new values (name or data)
   const updateNode = (path, updatedNode) => {
     console.log({ path, updatedNode });
@@ -51,14 +53,27 @@ const App = () => {
   };
 
   // Export the tree as a JSON string
-  const handleExport = () => {
+  const handleExport = async () => {
+    await axios.post(`${process.env.REACT_APP_API_BASE_URL}/tags/pushUpdates`, {
+      updates,
+    });
+    fetchTags();
+    setUpdates([]);
     const exportTree = JSON.stringify(tree, null, 2);
-    console.log(exportTree);
+    // console.log(exportTree);
     setExportTree(exportTree);
-    // Call your REST API to save the data to the database
-    // axios.post('/api/save-tree', { data: exportTree });
   };
 
+  const fetchTags = async () => {
+    const res = await axios.get(
+      `${process.env.REACT_APP_API_BASE_URL}/tags/tree`
+    );
+    setTree(res.data[0]);
+  };
+  useEffect(() => {
+    fetchTags();
+  }, []);
+  // console.log(tree);
   return (
     <div className="app">
       <TagView
@@ -66,6 +81,7 @@ const App = () => {
         tagId={tree.id}
         parentTagId={null}
         updateNode={updateNode}
+        setUpdates={setUpdates}
       />
       <button onClick={handleExport}>Export</button>
       <div>{exportTree}</div>
