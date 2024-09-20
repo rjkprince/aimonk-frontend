@@ -1,0 +1,33 @@
+.app {
+  padding: 20px;
+}
+
+.tag {
+  border: 1px solid #007bff;
+  margin: 10px;
+  border-radius: 5px;
+}
+
+.tag-name{
+  margin-left: 5px;
+}
+
+.tag-data-container{
+  padding: 5px;
+}
+
+.tag-header {
+  padding: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #007bff;
+}
+
+.tag-data input {
+  margin-left: 10px;
+}
+
+.tag-children {
+  margin-left: 20px;
+}
